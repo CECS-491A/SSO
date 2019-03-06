@@ -5,12 +5,14 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
+using System.Web.Http.Cors;
 using DataAccessLayer.Database;
 using DataAccessLayer.Models;
 using ServiceLayer.Services;
 
 namespace WebAPI.Controllers
 {
+    [EnableCors(origins: "http://localhost:8081", headers: "*", methods: "*")]
     public class UsersController : ApiController
     {
         public class RegisterRequest
@@ -18,11 +20,17 @@ namespace WebAPI.Controllers
             public string email;
             public string password;
             public DateTime dob;
+            public string securityQ1;
+            public string securityQ1Answer;
+            public string securityQ2;
+            public string securityQ2Answer;
+            public string securityQ3;
+            public string securityQ3Answer;
         }
 
         [HttpPost]
         [Route("api/users/register")]
-        public string Register([FromBody] RegisterRequest request)
+        public IHttpActionResult Register([FromBody] RegisterRequest request)
         {
             try
             {
@@ -30,11 +38,11 @@ namespace WebAPI.Controllers
             }
             catch (Exception)
             {
-                return request.email;
-                // TODO: Handle with REST error
+                return BadRequest("Email is not valid");
             }
             IPasswordService _passwordService = new PasswordService();
-            DateTime timestamp = DateTime.UtcNow;
+            ISessionService _sessionService = new SessionService();
+
             byte[] salt = _passwordService.GenerateSalt();
             string hash = _passwordService.HashPassword(request.password, salt);
             User user = new User
@@ -43,53 +51,32 @@ namespace WebAPI.Controllers
                 PasswordHash = hash,
                 PasswordSalt = salt,
                 DateOfBirth = request.dob,
-                UpdatedAt = timestamp
+                SecurityQ1 = request.securityQ1,
+                SecurityQ1Answer = request.securityQ1Answer,
+                SecurityQ2 = request.securityQ2,
+                SecurityQ2Answer = request.securityQ2Answer,
+                SecurityQ3 = request.securityQ3,
+                SecurityQ3Answer = request.securityQ3Answer,
+                UpdatedAt = DateTime.UtcNow,
+                CreatedAt = DateTime.UtcNow
             };
 
             using (var _db = new DatabaseContext())
             {
                 IUserService _userService = new UserService();
-                var response = _userService.CreateUser(_db, user);
+                var dbUser = _userService.CreateUser(_db, user);
+
                 try
                 {
                     _db.SaveChanges();
-                    return "woo it succeeded!";
+                    return Ok(new { data = new { token = "faketoken" } });
                 }
                 catch (DbEntityValidationException ex)
                 {
-                    //catch error
-                    // detach user attempted to be created from the db context - rollback
-                    _db.Entry(response).State = System.Data.Entity.EntityState.Detached;
+                    _db.Entry(dbUser).State = System.Data.Entity.EntityState.Detached;
+                    return InternalServerError();
                 }
             }
-            return "got to end without stuff";
-        }
-
-        // GET api/<controller>
-        public IEnumerable<string> Get()
-        {
-            return new string[] { "value1", "value2" };
-        }
-
-        // GET api/<controller>/5
-        public string Get(int id)
-        {
-            return "value";
-        }
-
-        // POST api/<controller>
-        public void Post([FromBody]string value)
-        {
-        }
-
-        // PUT api/<controller>/5
-        public void Put(int id, [FromBody]string value)
-        {
-        }
-
-        // DELETE api/<controller>/5
-        public void Delete(int id)
-        {
         }
     }
 }
