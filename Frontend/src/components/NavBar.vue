@@ -2,6 +2,7 @@
   <div class="nav-container">
     <span class="title">KFC SSO</span>
     <router-link to="home">Home</router-link>
+    <router-link to="register">Register</router-link>
     <router-link to="about">About</router-link>
   </div>
 </template>
