@@ -19,7 +19,12 @@ namespace WebAPI.Controllers
         {
             public string email;
             public string password;
+
             public DateTime dob;
+            public string city;
+            public string state;
+            public string country;
+
             public string securityQ1;
             public string securityQ1Answer;
             public string securityQ2;
@@ -50,7 +55,12 @@ namespace WebAPI.Controllers
                 Email = request.email,
                 PasswordHash = hash,
                 PasswordSalt = salt,
+
                 DateOfBirth = request.dob,
+                City = request.city,
+                State = request.state,
+                Country = request.country,
+
                 SecurityQ1 = request.securityQ1,
                 SecurityQ1Answer = request.securityQ1Answer,
                 SecurityQ2 = request.securityQ2,

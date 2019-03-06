@@ -20,11 +20,29 @@
       type="password"
       v-model="confirmPassword"
       placeholder="Confirm Password" /><br />
+
+    <br /><br />
+    Personal Details:<br />
     <input
       name="dateofbirth"
       type="text"
       v-model="dob"
       placeholder="Date of Birth (dd/mm/yyyy)" /><br />
+    <input
+      name="city"
+      type="text"
+      v-model="city"
+      placeholder="City" /><br />
+    <input
+      name="state"
+      type="text"
+      v-model="state"
+      placeholder="State" /><br />
+    <input
+      name="country"
+      type="text"
+      v-model="country"
+      placeholder="Country" /><br />
 
     <br /><br />
     Security Questions:<br />
@@ -81,7 +99,12 @@ export default {
       email: '',
       password: '',
       confirmPassword: '',
+
       dob: '',
+      city: '',
+      state: '',
+      country: '',
+
       securityQ1: '',
       securityQ1Answer: '',
       securityQ2: '',
@@ -96,13 +119,18 @@ export default {
         email: this.email,
         password: this.password,
         confirmPassword: this.confirmPassword,
+
         dob: this.dob,
+        city: this.city,
+        state: this.state,
+        country: this.country,
+
         securityQ1: this.securityQ1,
-        securityA1: this.securityA1,
+        securityQ1Answer: this.securityQ1Answer,
         securityQ2: this.securityQ2,
-        securityA2: this.securityA2,
+        securityQ2Answer: this.securityQ2Answer,
         securityQ3: this.securityQ3,
-        securityA3: this.securityA3  
+        securityQ3Answer: this.securityQ3Answer  
       }).then(() => {
         const params = new URLSearchParams(window.location.search)
 
