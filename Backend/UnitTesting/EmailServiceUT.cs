@@ -4,7 +4,7 @@ using ServiceLayer.Services;
 namespace UnitTesting
 {
     [TestClass]
-    class EmailServiceUT
+    public class EmailServiceUT
     {
         EmailService es;
         public EmailServiceUT()
@@ -29,7 +29,10 @@ namespace UnitTesting
             var expected = es.createEmailPlainBody(ExpectedReceiverName, ExpectedReceiverEmail, ExpectedEmailSubject, ExpectedEmailBody);
             var actual = es.createEmailPlainBody(ActualReceiverName, ActualReceiverEmail, ActualEmailSubject, ActualEmailBody);
             //Assert
-            Assert.AreEqual(actual, expected);
+            Assert.AreEqual(actual.To.ToString(), expected.To.ToString());
+            Assert.AreEqual(actual.From.ToString(), expected.From.ToString());
+            Assert.AreEqual(actual.Subject, expected.Subject);
+            Assert.AreEqual(actual.TextBody, expected.TextBody);
         }
 
         [TestMethod]
@@ -49,7 +52,10 @@ namespace UnitTesting
             var expected = es.createEmailPlainBody(ExpectedReceiverName, ExpectedReceiverEmail, ExpectedEmailSubject, ExpectedEmailBody);
             var actual = es.createEmailPlainBody(ActualReceiverName, ActualReceiverEmail, ActualEmailSubject, ActualEmailBody);
             //Assert
-            Assert.AreNotEqual(actual, expected);
+            Assert.AreNotEqual(actual.To, expected.To);
+            Assert.AreEqual(actual.From.ToString(), expected.From.ToString());
+            Assert.AreNotEqual(actual.Subject, expected.Subject);
+            Assert.AreNotEqual(actual.TextBody, expected.TextBody);
         }
     }
 }

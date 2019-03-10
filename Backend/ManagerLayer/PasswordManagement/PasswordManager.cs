@@ -3,11 +3,7 @@ using ServiceLayer.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Cryptography;
-using System.Text;
-using System.Threading.Tasks;
 using DataAccessLayer.Models;
-using ManagerLayer.AccessControl;
 using MimeKit;
 using System.Data.Entity.Validation;
 
@@ -15,7 +11,7 @@ namespace ManagerLayer.PasswordManagement
 {
     public class PasswordManager
     {
-        //Variable for how long the token is supposed to be live
+        //Variable for how long the token is supposed to be live, in minutes
         private const double TimeToExpire = 5;
 
         private IResetService _resetService;
@@ -29,6 +25,8 @@ namespace ManagerLayer.PasswordManagement
             _resetService = new ResetService();
             _userService = new UserService();
             _emailService = new EmailService();
+            _tokenService = new TokenService();
+            _passwordService = new PasswordService();
         }
 
         private DatabaseContext CreateDbContext()
@@ -39,7 +37,7 @@ namespace ManagerLayer.PasswordManagement
         public PasswordReset CreatePasswordReset(Guid userID)
         {
             string generatedResetToken = _tokenService.GenerateToken();
-            
+
             //Expiration time for the resetID
             DateTime newExpirationTime = DateTime.Now.AddMinutes(TimeToExpire);
 
@@ -62,7 +60,6 @@ namespace ManagerLayer.PasswordManagement
                     // detach session attempted to be created from the db context - rollback
                     _db.Entry(response).State = System.Data.Entity.EntityState.Detached;
                 }
-
                 return null;
             }
         }
@@ -124,7 +121,7 @@ namespace ManagerLayer.PasswordManagement
             return PasswordResetRetrieved.ResetCount;
         }
 
-        public bool GetResetIDStatus(string resetToken)
+        public bool GetPasswordResetStatus(string resetToken)
         {
             var PasswordResetRetrieved = GetPasswordReset(resetToken);
             return PasswordResetRetrieved.Disabled;
@@ -137,21 +134,23 @@ namespace ManagerLayer.PasswordManagement
             return resetURL;
         }
 
+        //Completely disables the PasswordReset from resetting password
         public void LockPasswordReset(string resetToken)
         {
             var PasswordResetRetrieved = GetPasswordReset(resetToken);
             PasswordResetRetrieved.Disabled = true;
+            PasswordResetRetrieved.AllowPasswordReset = false;
             UpdatePasswordReset(PasswordResetRetrieved);
         }
 
-        public bool CheckResetIDValid(string resetToken)
+        public bool CheckPasswordResetValid(string resetToken)
         {
             //See if ResetID exists 
             if (ExistingResetToken(resetToken))
             {
                 if (GetPasswordResetExpiration(resetToken) > DateTime.Now)
                 {
-                    if (!GetResetIDStatus(resetToken))
+                    if (!GetPasswordResetStatus(resetToken))
                     {
                         if (GetAttemptsPerID(resetToken) < 4)
                         {
@@ -167,14 +166,14 @@ namespace ManagerLayer.PasswordManagement
             return false;
         }
 
-        public int CountResetLinksMade24Hours(Guid UserID)
+        public int PasswordResetsMadeInPast24HoursByUser(Guid UserID)
         {
             int NumOfResetLinks = 3;
             DateTime past24Hours = DateTime.Now.AddDays(-1);
-            DateTime currentTime = DateTime.Now;
-            using(var _db = CreateDbContext())
+            DateTime currentTime = DateTime.Now.AddMinutes(5);
+            using (var _db = CreateDbContext())
             {
-                var listOfTokensFrom24Hours = from r in _db.ResetIDs
+                var listOfTokensFrom24Hours = from r in _db.PasswordResets
                                               where r.ExpirationTime <= currentTime & r.ExpirationTime >= past24Hours & r.UserID == UserID
                                               select r;
                 NumOfResetLinks = listOfTokensFrom24Hours.Count();
@@ -182,15 +181,15 @@ namespace ManagerLayer.PasswordManagement
             }
         }
 
-        public void AssignResetToken(string email, string url)
+        public void SendResetToken(string email, string url)
         {
-            using(var _db = CreateDbContext())
+            using (var _db = CreateDbContext())
             {
-                if(_userService.ExistingUser(_db, email))
+                if (_userService.ExistingUser(_db, email))
                 {
                     Guid userID = _userService.GetUser(_db, email).Id;
 
-                    if(CountResetLinksMade24Hours(userID) < 3)
+                    if (PasswordResetsMadeInPast24HoursByUser(userID) < 3)
                     {
                         PasswordReset newlyCreatedPasswordReset = CreatePasswordReset(userID);
                         string resetToken = newlyCreatedPasswordReset.ResetToken;
@@ -205,30 +204,43 @@ namespace ManagerLayer.PasswordManagement
             }
         }
 
+        public bool CheckIsPasswordPwned(string newPasswordToCheck)
+        {
+            return (_passwordService.CheckPasswordPwned(newPasswordToCheck) > 3);
+        }
+
+        public string SaltAndHashPassword(string password)
+        {
+            byte[] salt = _passwordService.GenerateSalt();
+            string hashedPassword = _passwordService.HashPassword(password, salt);
+            return hashedPassword;
+        }
+
         //This password update function is for when the user is not logged in and has answered the security questions
         public bool UpdatePassword(string resetToken, string newPasswordHash)
         {
             var retrievedPasswordReset = GetPasswordReset(resetToken);
-            var userID = retrievedPasswordReset.UserID;
+            var userIDAssociatedWithPasswordReset = retrievedPasswordReset.UserID;
 
             using (var _db = CreateDbContext())
             {
-                //Query the User table get the user that matches the UserID in the arguments
-                var storedHash = _db.Users.Find(userID).PasswordHash;
-
-                //Check to see if the new password is the same as the old password
-                if (storedHash == newPasswordHash)
-                {
-                    return false;
+                var userToUpdate = _db.Users.Find(userIDAssociatedWithPasswordReset);
+                if (userToUpdate != null) {
+                    var storedHash = userToUpdate.PasswordHash;
+                    if (storedHash == newPasswordHash)
+                    {
+                        return false;
+                    }
+                    else 
+                    {
+                        userToUpdate.PasswordHash = newPasswordHash;
+                        _db.SaveChanges();
+                        LockPasswordReset(resetToken);
+                        _db.SaveChanges();
+                        return true;
+                    }
                 }
-                else //If the new password is different, then update the password
-                {
-                    //Set that retrieved user's password hash to the new password hash
-                    storedHash = newPasswordHash;
-                    LockPasswordReset(resetToken);
-                    _db.SaveChanges();
-                    return true;
-                }
+                return false;
             }
         }
 
@@ -239,27 +251,18 @@ namespace ManagerLayer.PasswordManagement
 
             using (var _db = CreateDbContext())
             {
-                //Query the User table get the user that matches the UserID in the arguments
                 var storedHash = _db.Users.Find(userID).PasswordHash;
-
-                //Check to see if the new password is the same as the old password
                 if (storedHash == newPasswordHash)
                 {
                     return false;
                 }
-                else //If the new password is different, then update the password
+                else
                 {
-                    //Set that retrieved user's password hash to the new password hash
-                    storedHash = newPasswordHash;
+                    userToUpdate.PasswordHash = newPasswordHash;
                     _db.SaveChanges();
                     return true;
                 }
             }
-        }
-
-        public bool CheckPassword(string newPasswordToCheck)
-        {
-            return (_passwordService.CheckPasswordPwned(newPasswordToCheck) < 3);
         }
 
         //Function to get security questions from the DB
@@ -303,29 +306,27 @@ namespace ManagerLayer.PasswordManagement
                     if (listOfSecurityAnswers[i] != userSubmittedSecurityAnswers[i])
                     {
                         //Needs to be updated to get the most recent PasswordReset
-                        var resetIDToCount = _db.ResetIDs.Find(retrievedUser.Id);
-                        if (resetIDToCount != null)
+
+                        retrievedPasswordReset.ResetCount = retrievedPasswordReset.ResetCount + 1;
+                        if (retrievedPasswordReset.ResetCount > 4)
                         {
-                            resetIDToCount.ResetCount = resetIDToCount.ResetCount + 1;
-                            if(resetIDToCount.ResetCount > 4)
-                            {
-                                resetIDToCount.Disabled = true;
-                                resetIDToCount.AllowPasswordReset = true;
-                            }
+                            retrievedPasswordReset.Disabled = true;
                             _db.SaveChanges();
                         }
                         return false;
                     }
                 }
+                retrievedPasswordReset.AllowPasswordReset = true;
+                _db.SaveChanges();
                 return true;
             }
         }
 
         public bool CheckIfPasswordResetAllowed(string resetToken)
         {
-            using(var _db = CreateDbContext())
+            using (var _db = CreateDbContext())
             {
-                var resetTokenRetrieved = _db.ResetIDs.Find(resetToken);
+                var resetTokenRetrieved = _resetService.GetPasswordReset(_db, resetToken);
                 return resetTokenRetrieved.AllowPasswordReset;
             }
         }

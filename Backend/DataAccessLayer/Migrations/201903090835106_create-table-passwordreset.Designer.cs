@@ -7,13 +7,13 @@ namespace DataAccessLayer.Migrations
     using System.Resources;
     
     [GeneratedCode("EntityFramework.Migrations", "6.2.0-61023")]
-    public sealed partial class PasswordReset : IMigrationMetadata
+    public sealed partial class createtablepasswordreset : IMigrationMetadata
     {
-        private readonly ResourceManager Resources = new ResourceManager(typeof(PasswordReset));
+        private readonly ResourceManager Resources = new ResourceManager(typeof(createtablepasswordreset));
         
         string IMigrationMetadata.Id
         {
-            get { return "201903051936518_PasswordReset"; }
+            get { return "201903090835106_create-table-passwordreset"; }
         }
         
         string IMigrationMetadata.Source

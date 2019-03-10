@@ -33,7 +33,7 @@ namespace WebAPI.Controllers
 
                 string url = Request.RequestUri.ToString();
 
-                pm.AssignResetToken(email, url);
+                pm.SendResetToken(email, url);
                 var response = new HttpResponseMessage(HttpStatusCode.Created)
                 {
                     Content = new StringContent("Email received")
@@ -53,7 +53,7 @@ namespace WebAPI.Controllers
         public string Get(string resetToken)
         {
             PasswordManager pm = new PasswordManager();
-            if (pm.CheckResetIDValid(resetToken))
+            if (pm.CheckPasswordResetValid(resetToken))
             {
                 return JsonConvert.SerializeObject(pm.GetSecurityQuestions(resetToken));
             }else
@@ -67,12 +67,14 @@ namespace WebAPI.Controllers
         public bool CheckAnswers(string resetToken, [FromBody] SecurityAnswerRequest request)
         {
             PasswordManager pm = new PasswordManager();
-            if (pm.CheckResetIDValid(resetToken))
+            if (pm.CheckPasswordResetValid(resetToken))
             {
-                List<string> userSubmittedSecurityAnswer = new List<string>();
-                userSubmittedSecurityAnswer.Add(request.securityA1);
-                userSubmittedSecurityAnswer.Add(request.securityA2);
-                userSubmittedSecurityAnswer.Add(request.securityA3);
+                List<string> userSubmittedSecurityAnswer = new List<string>
+                {
+                    request.securityA1,
+                    request.securityA2,
+                    request.securityA3
+                };
                 if (pm.CheckSecurityAnswers(resetToken, userSubmittedSecurityAnswer))
                 {
                     return true;
@@ -87,17 +89,19 @@ namespace WebAPI.Controllers
 
         [HttpPost]
         [Route("api/reset/{resetToken}/resetpassword")]
-        public bool ResetPassword(string resetToken, [FromBody] string newPasswordHash)
+        public bool ResetPassword(string resetToken, [FromBody] string newPassword)
         {
             PasswordManager pm = new PasswordManager();
-            if (pm.CheckResetIDValid(resetToken))
+            if (pm.CheckPasswordResetValid(resetToken))
             {
                 if (pm.CheckIfPasswordResetAllowed(resetToken))
                 {
-                    return pm.UpdatePassword(resetToken, newPasswordHash);
+                    string newPasswordHashed = pm.SaltAndHashPassword(newPassword);
+                    return pm.UpdatePassword(resetToken, newPasswordHashed);
                 }
             }
             return false;
         }
+        
     }
 }
