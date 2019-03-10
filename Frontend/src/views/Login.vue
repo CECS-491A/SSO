@@ -26,7 +26,10 @@
         methods: {
             login() {
                axios.post('http://localhost:60461/api/users/login',
-               {input: this.input})
+               {
+                    email: this.input.username,
+                    password: this.input.password
+               })
                .then(i => {this.input = i.data; alert("Login Succesful"); console.log("Login Succesful"); this.$router.push('/dashboard')
                 })
                .catch(e => {console.log(e);

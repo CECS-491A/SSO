@@ -23,7 +23,7 @@ namespace ManagerLayer.Login
 
         public LoginManager()
         {
-
+            _tokenService = new TokenService();
         }
 
         public bool LoginCheckUserExists(string email)
@@ -69,7 +69,7 @@ namespace ManagerLayer.Login
                 }
                 else
                 {
-                    user.IncorrectPasswordCount = user.IncorrectPasswordCount++;
+                    user.IncorrectPasswordCount = ++user.IncorrectPasswordCount;
                     _db.SaveChanges();
                     if (user.IncorrectPasswordCount == 3)
                     {
@@ -89,7 +89,7 @@ namespace ManagerLayer.Login
                 Session session = new Session
                 {
                     Token = generateToken,
-                    User = user
+                    UserId = user.Id
                 };
 
                 var response = _sessionService.CreateSession(_db, session);
