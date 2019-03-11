@@ -12,19 +12,18 @@
             </li>
           </ul>
       </p>
-    <div class="oldPassword">
+    <div class="submitPasswords">
+        Old Password
         <input name="oldPassword" type="text" v-model="oldPassword"/>
         <br/>
-        <button type="submit" v-on:click="submitOldPassword">Confirm Old Password</button>
-    </div>
-
-    <div class="newPassword" v-if="oldPasswordCorrect">
+        New Password
         <input name="newPassword" type="text" v-model="newPassword" />
         <br/>
         Confirm New Password
         <input name="confirmNewPassword" type="text" v-model="confirmNewPassword"/>
         <br />
-      <button type="submit" v-on:click="submitNewPassword">Update Password</button>
+        <br/>
+        <button type="submit" v-on:click="submitPasswords">Update Password</button>
     </div>
   </div>
 </template>
@@ -38,39 +37,15 @@ export default {
       message: 'Enter the new password:',
       errors: [],
       oldPassword: null,
-      oldPasswordCorrect: false,
       newPassword: null,
       confirmNewPassword: null
     }
   },
   methods: {
-    submitOldPassword: function (e) {
-      if (this.oldPassword.length < 12) {
+    submitNewPasswords: function (e) {
+      if (this.newPassword.length < 12 || this.oldPassword.length < 12) {
         this.errors.push('Password does not meet minimum length of 12')
-      } else if (this.oldPassword.length > 2000) {
-        this.errors.push('Password exceeds maximum length of 2000')
-      } else {
-        axios({
-          method: 'POST',
-          url: 'api.kfcsso.com/api/user/checkpassword',
-          data: {oldPassword: this.$data.oldPassword},
-          headers: {
-            'Access-Control-Allow-Origin': '*',
-            'Access-Control-Allow-Credentials': true
-          }
-        })
-          .then(response => (this.oldPasswordCorrect = response.data))
-          .catch(e => { this.errors.push(e) })
-        if (!this.oldPasswordCorrect) {
-          this.errors.push('Password Incorrect')
-        }
-      }
-    },
-
-    submitNewPassword: function (e) {
-      if (this.newPassword.length < 12) {
-        this.errors.push('Password does not meet minimum length of 12')
-      } else if (this.newPassword.length > 2000) {
+      } else if (this.newPassword.length > 2000 || this.oldPassword.length > 2000) {
         this.errors.push('Password exceeds maximum length of 2000')
       } else if (this.confirmNewPassword !== this.newPassword) {
         this.errors.push('Passwords do not match')
@@ -80,7 +55,11 @@ export default {
         axios({
           method: 'POST',
           url: 'api.kfcsso.com/api/user/updatpPassword',
-          data: {newPassword: this.$data.confirmNewPassword},
+          data: {
+            oldPassword: this.$data.oldPassword,
+            newPassword: this.$data.confirmNewPassword,
+            confirmNewPassword: this.$data.confirmNewPassword
+          },
           headers: {
             'Access-Control-Allow-Origin': '*',
             'Access-Control-Allow-Credentials': true

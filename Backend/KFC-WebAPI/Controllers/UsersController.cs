@@ -81,12 +81,13 @@ namespace KFC_WebAPI.Controllers
             }
             return "got to end without stuff";
         }
+
         [HttpPost]
         [Route("api/user/updatepassword")]
         public HttpResponseMessage updatePassword([FromBody] postedPasswords passwords)
         {
-            if ()
-            {
+            //if ()
+            //{
                 string oldPassword = passwords.OldPassword;
                 string newPassword = passwords.NewPassword;
                 string confirmNewPassword = passwords.ConfirmNewPassword;
@@ -105,8 +106,8 @@ namespace KFC_WebAPI.Controllers
                     return Request.CreateResponse(HttpStatusCode.BadRequest, "Password has been pwned, please use a different password");
                 }
                 return Request.CreateResponse(HttpStatusCode.BadRequest, "Password submitted does not fit password requirements");
-            }
-            return Request.CreateResponse(HttpStatusCode.Unauthorized, "User is not logged in");
+            //}
+            //return Request.CreateResponse(HttpStatusCode.Unauthorized, "User is not logged in");
         }
     }
 }

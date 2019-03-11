@@ -14,17 +14,15 @@
       </p>
     <div class="SecurityQuestions" v-if="securityQuestions.length">
       <br/>
-      {{securityQuestion1}}
+      <li v-for="(securityQuestion, index) in securityQuestions" :key="index">
+              {{ securityQuestions }}
+            </li>
       <br />
-      <input name="SecurityAnswer1" type="text" v-model="securityAnswer1" placeholder="Answer"/>
+      <input name="SecurityAnswer1" type="text" v-model="securityAnswer1" placeholder="Answer for Question 1"/>
       <br />
-      {{securityQuestion2}}
+      <input name="SecurityAnswer2" type="text" v-model="securityAnswer2" placeholder="Answer for Question 2"/>
       <br />
-      <input name="SecurityAnswer2" type="text" v-model="securityAnswer2" placeholder="Answer"/>
-      <br />
-      {{securityQuestion3}}
-      <br />
-      <input name="SecurityAnswer3" type="text" v-model="securityAnswer3" placeholder="Answer"/>
+      <input name="SecurityAnswer3" type="text" v-model="securityAnswer3" placeholder="Answer for Question 3"/>
       <br />
       <button type="submit" v-on:click="submitAnswers">Submit Answers</button>
     </div>
@@ -32,6 +30,7 @@
       {{passwordMessage}}
       <input name="Password" type="text" v-model="newPassword"/>
       <br />
+
       <button type="submit" v-on:click="submitNewPassword">Submit New Password</button>
     </div>
   </div>
@@ -57,7 +56,7 @@ export default {
     }
   },
   created () {
-    console.log('asdfasdfsafdasdfasdf'),
+    console.log('asdfasdfsafdasdfasdf')
     axios({
       method: 'GET',
       url: 'http://localhost:60461/api/reset/' + this.resetToken,

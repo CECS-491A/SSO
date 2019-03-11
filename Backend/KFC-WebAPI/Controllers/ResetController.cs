@@ -101,7 +101,7 @@ namespace WebAPI.Controllers
         public HttpResponseMessage ResetPassword(string resetToken, [FromBody] NewPasswordPost passwordFromBody)
         {
             string submittedPassword = passwordFromBody.NewPassword;
-            if (submittedPassword != null || submittedPassword.Length > 2000 || submittedPassword.Length < 12)
+            if (submittedPassword != null && submittedPassword.Length < 2001 && submittedPassword.Length > 11)
             {
                 PasswordManager pm = new PasswordManager();
                 if (pm.CheckPasswordResetValid(resetToken))
@@ -111,7 +111,8 @@ namespace WebAPI.Controllers
                         if (!pm.CheckIsPasswordPwned(submittedPassword))
                         {
                             string newPasswordHashed = pm.SaltAndHashPassword(submittedPassword);
-                            return Request.CreateResponse(HttpStatusCode.OK, pm.UpdatePassword(resetToken, newPasswordHashed));
+                            pm.UpdatePassword(resetToken, newPasswordHashed);
+                            return Request.CreateResponse(HttpStatusCode.OK, "Password has been reset");
                         }
                         return Request.CreateResponse(HttpStatusCode.BadRequest, "Password has been pwned, please use a different password");
                     }
