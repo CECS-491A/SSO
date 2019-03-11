@@ -195,6 +195,10 @@ namespace ManagerLayer.PasswordManagement
                         string resetLink = CreateResetURL(url, resetToken);
                         SendResetEmailUserExists(email, resetLink);
                     }
+                    else
+                    {
+                        SendResetEmailUserExistsTooManyResets(email);
+                    }
                 }
                 else
                 {
@@ -336,17 +340,33 @@ namespace ManagerLayer.PasswordManagement
             string userFullName = receiverEmail;
             string template = "Hi, \r\n" +
                                              "You recently requested to reset your password for your KFC account, click the link below to reset it.\r\n" +
-                                             "The URL is only valid for the next 5 minutes\r\n {0}" +
+                                             "The URL is only valid for the next 5 minutes\r\n {0}\r\n\r\n" +
                                              "If you did not request to reset your password, please contact us by responding to this email.\r\n\r\n" +
                                              "Thanks, KFC Team";
-            string data = "resetURL";
+            string data = resetURL;
             string resetPasswordBodyString = string.Format(template, data);
 
             //Create the message that will be sent
             MimeMessage emailToSend = _emailService.createEmailPlainBody(userFullName, receiverEmail, resetPasswordSubjectString, resetPasswordBodyString);
             //Send the email with the message
             _emailService.sendEmail(emailToSend);
+        }
 
+        //Function to create the email is user exists, but has too many reset links
+        public void SendResetEmailUserExistsTooManyResets(string receiverEmail)
+        {
+            string resetPasswordSubjectString = "KFC SSO Reset Password";
+            string userFullName = receiverEmail;
+            string resetPasswordBodyString = "Hi, \r\n" +
+                                             "You recently requested to reset your password for your KFC account, however 3 resets have been attempted within the past 24 hours.\r\n" +
+                                             "Please wait 24 hours until you attempt to reset your password\r\n\r\n" +
+                                             "If you did not request to reset your password, please contact us by responding to this email.\r\n\r\n" +
+                                             "Thanks, KFC Team";
+
+            //Create the message that will be sent
+            MimeMessage emailToSend = _emailService.createEmailPlainBody(userFullName, receiverEmail, resetPasswordSubjectString, resetPasswordBodyString);
+            //Send the email with the message
+            _emailService.sendEmail(emailToSend);
         }
 
         //Function to create the email is user doesn't exist
