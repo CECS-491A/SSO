@@ -40,6 +40,9 @@
                     else if(e.response.status === 401){
                         alert("Invalid Password")
                     }
+                    //else if(e.response.status === 401 & 0){ //i habe to fix it
+
+                    //}
                     else{
                         alert("Bad Reqiest or Conflict")
                     }

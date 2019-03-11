@@ -70,10 +70,12 @@ namespace ManagerLayer.Login
                 else
                 {
                     user.IncorrectPasswordCount = ++user.IncorrectPasswordCount;
+                    _userService.UpdateUser(_db, user);
                     _db.SaveChanges();
                     if (user.IncorrectPasswordCount == 3)
                     {
                         user.Disabled = true;
+                        _userService.UpdateUser(_db, user);
                         _db.SaveChanges();
                     }
                     return false;
