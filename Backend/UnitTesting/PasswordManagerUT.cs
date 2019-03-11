@@ -1,4 +1,4 @@
-﻿using DataAccessLayer.Database;
+using DataAccessLayer.Database;
 using DataAccessLayer.Models;
 using ManagerLayer.PasswordManagement;
 using Microsoft.VisualStudio.TestTools.UnitTesting;

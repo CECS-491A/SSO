@@ -123,7 +123,11 @@ namespace ManagerLayer.PasswordManagement
         public bool GetPasswordResetStatus(string resetToken)
         {
             var PasswordResetRetrieved = GetPasswordReset(resetToken);
-            return PasswordResetRetrieved.Disabled;
+            if(PasswordResetRetrieved != null)
+            {
+                return PasswordResetRetrieved.Disabled;
+            }
+            return false;
         }
 
         public string CreateResetURL(string baseURL, string resetToken)

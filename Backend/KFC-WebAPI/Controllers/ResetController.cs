@@ -42,9 +42,7 @@ namespace WebAPI.Controllers
             if (email != null)
             {
                 PasswordManager pm = new PasswordManager();
-
                 string url = "localhost:8080/#/resetpassword/";
-
                 pm.SendResetToken(email, url);
                 var response = new HttpResponseMessage(HttpStatusCode.OK)
                 {
@@ -52,10 +50,7 @@ namespace WebAPI.Controllers
                 };
                 return response;
             }
-            else
-            {
-                return Request.CreateResponse(HttpStatusCode.BadRequest);
-            }
+            return Request.CreateResponse(HttpStatusCode.BadRequest);
         }
 
         //After the user clicks the link in the email, this action gets called and takes the resetToken that's appended to the URL that was sent to the user
@@ -88,10 +83,7 @@ namespace WebAPI.Controllers
                 {
                     return Request.CreateResponse(HttpStatusCode.OK, true);
                 }
-                else
-                {
-                    return Request.CreateResponse(HttpStatusCode.Unauthorized, false);
-                }
+                return Request.CreateResponse(HttpStatusCode.Unauthorized, false);
             }
             return Request.CreateResponse(HttpStatusCode.Unauthorized, "Reset link is no longer valid");
         }
