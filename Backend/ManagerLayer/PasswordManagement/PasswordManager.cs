@@ -307,18 +307,18 @@ namespace ManagerLayer.PasswordManagement
                     if (listOfSecurityAnswers[i] != userSubmittedSecurityAnswers[i])
                     {
                         //Needs to be updated to get the most recent PasswordReset
-
                         retrievedPasswordReset.ResetCount = retrievedPasswordReset.ResetCount + 1;
-                        if (retrievedPasswordReset.ResetCount > 4)
+                        UpdatePasswordReset(retrievedPasswordReset);
+                        if (GetPasswordReset(retrievedPasswordReset.ResetToken).ResetCount > 4)
                         {
                             retrievedPasswordReset.Disabled = true;
-                            _db.SaveChanges();
+                            UpdatePasswordReset(retrievedPasswordReset);
                         }
                         return false;
                     }
                 }
                 retrievedPasswordReset.AllowPasswordReset = true;
-                _db.SaveChanges();
+                UpdatePasswordReset(retrievedPasswordReset);
                 return true;
             }
         }

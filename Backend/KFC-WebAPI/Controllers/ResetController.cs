@@ -43,7 +43,7 @@ namespace WebAPI.Controllers
             {
                 PasswordManager pm = new PasswordManager();
 
-                string url = "kfcsso.com/api/reset/";
+                string url = "localhost:8080/#/resetpassword/";
 
                 pm.SendResetToken(email, url);
                 var response = new HttpResponseMessage(HttpStatusCode.OK)
@@ -101,7 +101,7 @@ namespace WebAPI.Controllers
         public HttpResponseMessage ResetPassword(string resetToken, [FromBody] NewPasswordPost passwordFromBody)
         {
             string submittedPassword = passwordFromBody.newPassword;
-            if (submittedPassword != null)
+            if (submittedPassword != null || submittedPassword.Length > 2000 || submittedPassword.Length < 12)
             {
                 PasswordManager pm = new PasswordManager();
                 if (pm.CheckPasswordResetValid(resetToken))
@@ -115,10 +115,11 @@ namespace WebAPI.Controllers
                         }
                         return Request.CreateResponse(HttpStatusCode.BadRequest, "Password has been pwned, please use a different password");
                     }
+                    return Request.CreateResponse(HttpStatusCode.Unauthorized, "Reset password not allowed");
                 }
                 return Request.CreateResponse(HttpStatusCode.Unauthorized, "Reset link is no longer valid");
             }
-            return Request.CreateResponse(HttpStatusCode.BadRequest, "Submitted password was null");
+            return Request.CreateResponse(HttpStatusCode.BadRequest, "Submitted password does not meet minimum requirements");
         }
     }
 }
