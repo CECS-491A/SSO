@@ -14,23 +14,23 @@ namespace WebAPI.Controllers
         public class EmailPost
         {
             [JsonProperty("email")]
-            public string email { get; set; }
+            public string Email { get; set; }
         }
 
         public class SecurityAnswerPost
         {
             [JsonProperty("securityA1")]
-            public string securityA1 { get; set; }
+            public string SecurityA1 { get; set; }
             [JsonProperty("securityA2")]
-            public string securityA2 { get; set; }
+            public string SecurityA2 { get; set; }
             [JsonProperty("securityA3")]
-            public string securityA3 { get; set; }
+            public string SecurityA3 { get; set; }
         }
 
         public class NewPasswordPost
         {
-            [JsonProperty("newPassword")]
-            public string newPassword { get; set; }
+            [JsonProperty("NewPassword")]
+            public string NewPassword { get; set; }
         }
 
         //After the user fills in the field with email, this action gets called
@@ -38,7 +38,7 @@ namespace WebAPI.Controllers
         [Route("api/reset/send")]
         public HttpResponseMessage SendResetEmail([FromBody] EmailPost emailFromBody)
         {
-            string email = emailFromBody.email;
+            string email = emailFromBody.Email;
             if (email != null)
             {
                 PasswordManager pm = new PasswordManager();
@@ -80,9 +80,9 @@ namespace WebAPI.Controllers
             {
                 List<string> userSubmittedSecurityAnswer = new List<string>
                 {
-                    postedAnswers.securityA1,
-                    postedAnswers.securityA2,
-                    postedAnswers.securityA3
+                    postedAnswers.SecurityA1,
+                    postedAnswers.SecurityA2,
+                    postedAnswers.SecurityA3
                 };
                 if (pm.CheckSecurityAnswers(resetToken, userSubmittedSecurityAnswer))
                 {
@@ -100,7 +100,7 @@ namespace WebAPI.Controllers
         [Route("api/reset/{resetToken}/resetpassword")]
         public HttpResponseMessage ResetPassword(string resetToken, [FromBody] NewPasswordPost passwordFromBody)
         {
-            string submittedPassword = passwordFromBody.newPassword;
+            string submittedPassword = passwordFromBody.NewPassword;
             if (submittedPassword != null || submittedPassword.Length > 2000 || submittedPassword.Length < 12)
             {
                 PasswordManager pm = new PasswordManager();

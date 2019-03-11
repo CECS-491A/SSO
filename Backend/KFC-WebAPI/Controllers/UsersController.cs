@@ -8,6 +8,9 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
+using Newtonsoft.Json;
+using ManagerLayer.PasswordManagement;
+using ManagerLayer.UserManagement;
 
 namespace KFC_WebAPI.Controllers
 {
@@ -18,6 +21,20 @@ namespace KFC_WebAPI.Controllers
             public string email;
             public string password;
             public DateTime dob;
+        }
+
+        public class postedPasswords
+        {
+            [JsonProperty("username")]
+            public string Username { get; set; }
+            [JsonProperty("sessionToken")]
+            public string SessionToken { get; set; }
+            [JsonProperty("oldPassword")]
+            public string OldPassword { get; set; }
+            [JsonProperty("newPassword")]
+            public string NewPassword { get; set; }
+            [JsonProperty("confirmNewPassword")]
+            public string ConfirmNewPassword { get; set; }
         }
 
         [HttpPost]
@@ -63,6 +80,33 @@ namespace KFC_WebAPI.Controllers
                 }
             }
             return "got to end without stuff";
+        }
+        [HttpPost]
+        [Route("api/user/updatepassword")]
+        public HttpResponseMessage updatePassword([FromBody] postedPasswords passwords)
+        {
+            if ()
+            {
+                string oldPassword = passwords.OldPassword;
+                string newPassword = passwords.NewPassword;
+                string confirmNewPassword = passwords.ConfirmNewPassword;
+
+                if (newPassword.Length < 2001 && newPassword.Length > 11 && newPassword.Equals(confirmNewPassword))
+                {
+                    PasswordManager pm = new PasswordManager();
+                    UserManagementManager umm = new UserManagementManager();
+                    if (!pm.CheckIsPasswordPwned(newPassword))
+                    {
+                        string newPasswordHashed = pm.SaltAndHashPassword(newPassword);
+                        User userToUpdate = umm.GetUser(passwords.Username);
+                        pm.UpdatePassword(userToUpdate, newPasswordHashed);
+                        return Request.CreateResponse(HttpStatusCode.OK, "Password Updated");
+                    }
+                    return Request.CreateResponse(HttpStatusCode.BadRequest, "Password has been pwned, please use a different password");
+                }
+                return Request.CreateResponse(HttpStatusCode.BadRequest, "Password submitted does not fit password requirements");
+            }
+            return Request.CreateResponse(HttpStatusCode.Unauthorized, "User is not logged in");
         }
     }
 }
