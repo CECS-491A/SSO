@@ -24,8 +24,10 @@ namespace UnitTesting
         [TestMethod]
         public void LoginCheckUserExists_Success_ReturnTrue()
         {
-            um.CreateUser("rrrcf2080@gmail.com", "qwerty12345", new DateTime(1996, 12, 15));
-            bool result = lm.LoginCheckUserExists("rrrcf2080@gmail.com");
+            var username = Guid.NewGuid() + "@" + Guid.NewGuid() + ".com";
+            var password = Guid.NewGuid().ToString();
+            um.CreateUser(username, password, new DateTime(1996, 12, 15));
+            bool result = lm.LoginCheckUserExists(username);
             Assert.AreEqual(true, result);
         }
 
