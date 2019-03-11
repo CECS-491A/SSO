@@ -33,7 +33,6 @@
                .then(i => {this.input = i.data; alert("Login Succesful"); console.log("Login Succesful"); this.$router.push('/dashboard')
                 })
                .catch(e => {console.log(e);
-                    alert(e.response.status + " " + e.response.message)
                     if(e.response.status === 404){
                         alert("User Not Found")
                     }
