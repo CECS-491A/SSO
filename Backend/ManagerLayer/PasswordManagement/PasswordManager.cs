@@ -37,8 +37,7 @@ namespace ManagerLayer.PasswordManagement
         public PasswordReset CreatePasswordReset(Guid userID)
         {
             string generatedResetToken = _tokenService.GenerateToken();
-
-            //Expiration time for the resetID
+            
             DateTime newExpirationTime = DateTime.Now.AddMinutes(TimeToExpire);
 
             using (var _db = CreateDbContext())
@@ -57,7 +56,7 @@ namespace ManagerLayer.PasswordManagement
                 catch (DbEntityValidationException ex)
                 {
                     //catch error
-                    // detach session attempted to be created from the db context - rollback
+                    //detach PasswordReset attempted to be created from the db context - rollback
                     _db.Entry(response).State = System.Data.Entity.EntityState.Detached;
                 }
                 return null;
@@ -247,11 +246,9 @@ namespace ManagerLayer.PasswordManagement
         //This password update function is for when the user is already logged in and wants to update their password
         public bool UpdatePassword(User userToUpdate, string newPasswordHash)
         {
-            var userID = userToUpdate.Id;
-
             using (var _db = CreateDbContext())
             {
-                var storedHash = _db.Users.Find(userID).PasswordHash;
+                var storedHash = userToUpdate.PasswordHash;
                 if (storedHash == newPasswordHash)
                 {
                     return false;

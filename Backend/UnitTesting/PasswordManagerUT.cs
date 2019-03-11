@@ -213,7 +213,7 @@ namespace UnitTesting
             string newPassword = "asdf";
             //Act
             var response = pm.UpdatePassword(newUser, newPassword);
-            var actual = _db.Users.Find(newUser.Id).PasswordHash;
+            var actual = newUser.PasswordHash;
             //Assert
             Assert.IsNotNull(response);
             Assert.IsTrue(response);

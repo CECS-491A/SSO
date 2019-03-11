@@ -21,7 +21,11 @@ namespace WebAPI.Controllers
             public string securityA3;
         }
 
-        //IHttpActionResult
+        public class NewPassword
+        {
+            public string newPassword;
+        }
+        
         //After the user fills in the field with email, this action gets called
         [HttpPost]
         [Route("api/reset/send")]
@@ -31,10 +35,10 @@ namespace WebAPI.Controllers
             {
                 PasswordManager pm = new PasswordManager();
 
-                string url = Request.RequestUri.ToString();
+                string url = "kfcsso.com/api/reset/";
 
                 pm.SendResetToken(email, url);
-                var response = new HttpResponseMessage(HttpStatusCode.Created)
+                var response = new HttpResponseMessage(HttpStatusCode.OK)
                 {
                     Content = new StringContent("Email received")
                 };
@@ -50,21 +54,19 @@ namespace WebAPI.Controllers
         //After the user clicks the link in the email, this action gets called and takes the resetToken that's appended to the URL that was sent to the user
         [HttpGet]
         [Route("api/reset/{resetToken}")]
-        public string Get(string resetToken)
+        public HttpResponseMessage Get(string resetToken)
         {
             PasswordManager pm = new PasswordManager();
             if (pm.CheckPasswordResetValid(resetToken))
             {
-                return JsonConvert.SerializeObject(pm.GetSecurityQuestions(resetToken));
-            }else
-            {
-                return null;
+                return Request.CreateResponse(HttpStatusCode.OK, JsonConvert.SerializeObject(pm.GetSecurityQuestions(resetToken));
             }
+            return Request.CreateResponse(HttpStatusCode.Unauthorized, "Reset link is no longer valid");
         }
 
         [HttpPost]
         [Route("api/reset/{resetToken}/checkanswers")]
-        public bool CheckAnswers(string resetToken, [FromBody] SecurityAnswerRequest request)
+        public HttpResponseMessage CheckAnswers(string resetToken, [FromBody] SecurityAnswerRequest request)
         {
             PasswordManager pm = new PasswordManager();
             if (pm.CheckPasswordResetValid(resetToken))
@@ -77,30 +79,35 @@ namespace WebAPI.Controllers
                 };
                 if (pm.CheckSecurityAnswers(resetToken, userSubmittedSecurityAnswer))
                 {
-                    return true;
+                    return Request.CreateResponse(HttpStatusCode.OK, true);
                 }
                 else
                 {
-                    return false;
+                    return Request.CreateResponse(HttpStatusCode.Unauthorized, false);
                 }
             }
-            return false;
+            return Request.CreateResponse(HttpStatusCode.Unauthorized, "Reset link is no longer valid");
         }
 
         [HttpPost]
         [Route("api/reset/{resetToken}/resetpassword")]
-        public bool ResetPassword(string resetToken, [FromBody] string newPassword)
+        public HttpResponseMessage ResetPassword(string resetToken, [FromBody] NewPassword submittedPassword)
         {
             PasswordManager pm = new PasswordManager();
             if (pm.CheckPasswordResetValid(resetToken))
             {
                 if (pm.CheckIfPasswordResetAllowed(resetToken))
                 {
-                    string newPasswordHashed = pm.SaltAndHashPassword(newPassword);
-                    return pm.UpdatePassword(resetToken, newPasswordHashed);
+                    string newPassword = submittedPassword.newPassword;
+                    if (!pm.CheckIsPasswordPwned(newPassword))
+                    {
+                        string newPasswordHashed = pm.SaltAndHashPassword(newPassword);
+                        return Request.CreateResponse(HttpStatusCode.OK, pm.UpdatePassword(resetToken, newPasswordHashed));
+                    }
+                    return Request.CreateResponse(HttpStatusCode.BadRequest, "Password has been pwned, please use a different password");
                 }
             }
-            return false;
+            return Request.CreateResponse(HttpStatusCode.Unauthorized, "Reset link is no longer valid");
         }
         
     }
