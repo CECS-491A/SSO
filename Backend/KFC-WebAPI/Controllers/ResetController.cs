@@ -34,7 +34,7 @@ namespace WebAPI.Controllers
             if (email != null)
             {
                 PasswordManager pm = new PasswordManager();
-
+                
                 string url = "kfcsso.com/api/reset/";
 
                 pm.SendResetToken(email, url);
