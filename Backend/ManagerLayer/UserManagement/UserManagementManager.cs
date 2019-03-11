@@ -56,7 +56,7 @@ namespace ManagerLayer.UserManagement
                     _db.SaveChanges();
                     return user;
                 }
-                catch (DbEntityValidationException ex)
+                catch (DbEntityValidationException)
                 {
                     //catch error
                     // detach user attempted to be created from the db context - rollback
@@ -131,7 +131,7 @@ namespace ManagerLayer.UserManagement
                 {
                     return _db.SaveChanges();
                 }
-                catch (DbEntityValidationException ex)
+                catch (DbEntityValidationException)
                 {
                     // catch error
                     // rollback changes
@@ -139,6 +139,14 @@ namespace ManagerLayer.UserManagement
                     _db.Entry(response).State = System.Data.Entity.EntityState.Unchanged;
                     return 0;
                 }
+            }
+        }
+
+        public bool ExistingUser(string email)
+        {
+            using (var _db = CreateDbContext())
+            {
+                return _userService.ExistingUser(_db, email);
             }
         }
     }

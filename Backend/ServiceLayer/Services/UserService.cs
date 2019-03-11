@@ -66,5 +66,10 @@ namespace ServiceLayer.Services
             Console.WriteLine("User does not exist");
             return null;
         }
+
+        public bool ExistingUser(DatabaseContext _db, string email)
+        {
+            return _UserManagementRepo.ExistingUser(_db, email);
+        }
     }
 }

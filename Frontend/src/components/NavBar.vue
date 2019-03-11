@@ -4,6 +4,10 @@
     <router-link to="home">Home</router-link>
     <router-link to="register">Register</router-link>
     <router-link to="about">About</router-link>
+    <router-link to="add">Register App</router-link>
+    <router-link to="key">Generate Key</router-link>
+    <router-link to="delete">Delete App</router-link>
+    <router-link to="login">Login</router-link>
   </div>
 </template>
 
