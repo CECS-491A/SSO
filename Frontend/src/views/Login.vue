@@ -33,16 +33,16 @@
                .then(i => {this.input = i.data; alert("Login Succesful"); console.log("Login Succesful"); this.$router.push('/dashboard')
                 })
                .catch(e => {console.log(e);
-                    alert(e.response.status)
+                    alert(e.response.status + " " + e.response.message)
                     if(e.response.status === 404){
                         alert("User Not Found")
                     }
                     else if(e.response.status === 401){
+                        alert("User is Disabled")
+                    }
+                    else if(e.response.status === 400){ 
                         alert("Invalid Password")
                     }
-                    //else if(e.response.status === 401 & 0){ //i habe to fix it
-
-                    //}
                     else{
                         alert("Bad Reqiest or Conflict")
                     }
