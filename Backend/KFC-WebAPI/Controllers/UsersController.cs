@@ -77,7 +77,6 @@ namespace KFC_WebAPI.Controllers
             {
                 //404
                 return Content(HttpStatusCode.NotFound, "Invalid Username");
-                //return NotFound();
             }
             else
             {
@@ -85,7 +84,6 @@ namespace KFC_WebAPI.Controllers
                 {
                     //401
                     return Content(HttpStatusCode.Unauthorized, "User is Disabled");
-                    //return Unauthorized();
                 }
                 else
                 {
