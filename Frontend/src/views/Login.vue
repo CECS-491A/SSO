@@ -17,6 +17,7 @@
         name: 'login',
         data() {
             return {
+                loginToken: "",
                 input: {
                     username: "",
                     password: ""
@@ -24,31 +25,35 @@
             }
         },
         methods: {
-            login() {
-               axios.post('http://localhost:60461/api/users/login',
-               {
+            login() 
+            {
+                axios.post('http://localhost:60461/api/users/login',
+                {
                     email: this.input.username,
-                    password: this.input.password
-               })
-               .then(i => {this.input = i.data; alert("Login Succesful"); console.log("Login Succesful"); this.$router.push('/dashboard')
+                    password: this.input.password,
+                },
+                {headers:
+                { 'Content-Type': 'application/json',
+                    'Authorization': 'Bearer '
+                }})
+                .then(i => {this.input = i.data; alert("Login Succesful"); 
+                    this.loginToken = i.data;
+                    this.$router.push('/dashboard')
+                    })
+                .catch(e => {console.log(e);
+                        if(e.response.status === 404){
+                            alert("User Not Found")
+                        }
+                        else if(e.response.status === 401){
+                            alert("Invalid Password")
+                        }
+                        else{
+                            alert("Bad Request or Conflict")
+                        }
                 })
-               .catch(e => {console.log(e);
-                    if(e.response.status === 404){
-                        alert("User Not Found")
-                    }
-                    else if(e.response.status === 401){
-                        alert("User is Disabled")
-                    }
-                    else if(e.response.status === 400){ 
-                        alert("Invalid Password")
-                    }
-                    else{
-                        alert("Bad Reqiest or Conflict")
-                    }
-            })
+            }
         }
     }
-}
 </script>
 
 <style>
