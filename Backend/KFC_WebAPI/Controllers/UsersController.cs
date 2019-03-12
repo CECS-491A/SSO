@@ -1,13 +1,10 @@
-﻿using DataAccessLayer.Database;
+using DataAccessLayer.Database;
 using DataAccessLayer.Models;
 using ManagerLayer.Login;
-using ServiceLayer.Services;
 using System;
-using System.Collections.Generic;
 using System.Data.Entity.Validation;
 using System.Net;
 using System.Web.Http;
-using System.Web.Http.Cors;
 using ManagerLayer;
 using ServiceLayer.Exceptions;
 using System.ComponentModel.DataAnnotations;
