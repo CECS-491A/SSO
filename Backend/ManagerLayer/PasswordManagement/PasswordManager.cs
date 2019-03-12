@@ -37,6 +37,7 @@ namespace ManagerLayer.PasswordManagement
 
         public PasswordReset CreatePasswordReset(Guid userID)
         {
+            _tokenService = new TokenService();
             string generatedResetToken = _tokenService.GenerateToken();
             
             //Expiration time for the resetID
@@ -258,6 +259,7 @@ namespace ManagerLayer.PasswordManagement
 
         public bool CheckPassword(string newPasswordToCheck)
         {
+            _passwordService = new PasswordService();
             return (_passwordService.CheckPasswordPwned(newPasswordToCheck) < 3);
         }
 
