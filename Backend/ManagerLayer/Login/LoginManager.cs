@@ -1,4 +1,4 @@
-﻿using DataAccessLayer.Models;
+using DataAccessLayer.Models;
 using DataAccessLayer.Repositories;
 using ServiceLayer.Services;
 using DataAccessLayer.Database;
@@ -68,29 +68,32 @@ namespace ManagerLayer.Login
                 if (userRepo.ValidatePassword(user, hashedPassword))
                 {
                     user.IncorrectPasswordCount = 0;
+                    _userService.UpdateUser(_db, user);
+                    _db.SaveChanges();
                     return true;
                 }
                 else
                 {
                     user.IncorrectPasswordCount = ++user.IncorrectPasswordCount;
-                    //_userService.UpdateUser(_db, user);
-                    //_db.SaveChanges();
+                    _userService.UpdateUser(_db, user);
+                    _db.SaveChanges();
                     if (user.IncorrectPasswordCount == 3)
                     {
                         user.Disabled = true;
-                        //_userService.UpdateUser(_db, user);
-                        //_db.SaveChanges();
+                        _userService.UpdateUser(_db, user);
+                        _db.SaveChanges();
                     }
                     return false;
                 }
             }
         }
 
-        public string LoginAuthorized()
+        public string LoginAuthorized(LoginRequest request)
         {
             _tokenService = new TokenService();
             using (var _db = new DatabaseContext())
             {
+                user = _userService.GetUser(_db, request.email);
                 string generateToken = _tokenService.GenerateToken();
                 Session session = new Session
                 {
