@@ -1,4 +1,3 @@
-﻿
 using System;
 using ManagerLayer.UserManagement;
 using ManagerLayer.Login;
