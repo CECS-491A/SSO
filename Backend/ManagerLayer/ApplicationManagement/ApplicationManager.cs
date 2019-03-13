@@ -155,12 +155,12 @@ namespace ManagerLayer.ApplicationManagement
                 response = new HttpResponseContent(HttpStatusCode.BadRequest, "Invalid Logo Image Extension: Can only be .PNG");
                 return response;
             }
-            else if (!IsValidDimensions(logoUrl))
-            {
-                // Error response
-                response = new HttpResponseContent(HttpStatusCode.BadRequest, "Invalid Logo Dimensions: Can be no more than 55x55 pixels.");
-                return response;
-            }
+            //else if (!IsValidDimensions(logoUrl))
+            //{
+            //    // Error response
+            //    response = new HttpResponseContent(HttpStatusCode.BadRequest, "Invalid Logo Dimensions: Can be no more than 55x55 pixels.");
+            //    return response;
+            //}
 
             using (var _db = new DatabaseContext())
             {
@@ -417,7 +417,7 @@ namespace ManagerLayer.ApplicationManagement
             y = img.Height;
 
             // Logo dimensions can be no more than 55x55 pixels
-            if(x > 55 || y > 55)
+            if (x > 55 || y > 55)
             {
                 return false;
             }

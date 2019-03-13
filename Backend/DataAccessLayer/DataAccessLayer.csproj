@@ -63,6 +63,10 @@
     <Compile Include="Migrations\201903070039162_create-tables-applications-apikeys.Designer.cs">
       <DependentUpon>201903070039162_create-tables-applications-apikeys.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201903090835106_create-table-passwordreset.cs" />
+    <Compile Include="Migrations\201903090835106_create-table-passwordreset.Designer.cs">
+      <DependentUpon>201903090835106_create-table-passwordreset.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\201903100743056_create-attribute-incorrectPasswordCount.cs" />
     <Compile Include="Migrations\201903100743056_create-attribute-incorrectPasswordCount.Designer.cs">
       <DependentUpon>201903100743056_create-attribute-incorrectPasswordCount.cs</DependentUpon>
@@ -75,6 +79,10 @@
     <Compile Include="Migrations\201903111003125_upate-sessions-userNotUnique.Designer.cs">
       <DependentUpon>201903111003125_upate-sessions-userNotUnique.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201903130042345_update-tables-passwords.cs" />
+    <Compile Include="Migrations\201903130042345_update-tables-passwords.Designer.cs">
+      <DependentUpon>201903130042345_update-tables-passwords.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\ApiKey.cs" />
     <Compile Include="Models\Application.cs" />
@@ -84,10 +92,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Repositories\ApiKeyRepository.cs" />
     <Compile Include="Repositories\ApplicationRepository.cs" />
-    <Compile Include="Migrations\201903051936518_PasswordReset.cs" />
-    <Compile Include="Migrations\201903051936518_PasswordReset.Designer.cs">
-      <DependentUpon>201903051936518_PasswordReset.cs</DependentUpon>
-    </Compile>
     <Compile Include="Models\PasswordReset.cs" />
     <Compile Include="Repositories\ResetRepository.cs" />
     <Compile Include="Repositories\SessionRepository.cs" />
@@ -113,8 +117,8 @@
     <EmbeddedResource Include="Migrations\201903070039162_create-tables-applications-apikeys.resx">
       <DependentUpon>201903070039162_create-tables-applications-apikeys.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201903051936518_PasswordReset.resx">
-      <DependentUpon>201903051936518_PasswordReset.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\201903090835106_create-table-passwordreset.resx">
+      <DependentUpon>201903090835106_create-table-passwordreset.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201903100743056_create-attribute-incorrectPasswordCount.resx">
       <DependentUpon>201903100743056_create-attribute-incorrectPasswordCount.cs</DependentUpon>
@@ -124,6 +128,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201903111003125_upate-sessions-userNotUnique.resx">
       <DependentUpon>201903111003125_upate-sessions-userNotUnique.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201903130042345_update-tables-passwords.resx">
+      <DependentUpon>201903130042345_update-tables-passwords.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup />

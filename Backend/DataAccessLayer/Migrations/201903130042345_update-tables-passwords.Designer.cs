@@ -7,13 +7,13 @@ namespace DataAccessLayer.Migrations
     using System.Resources;
     
     [GeneratedCode("EntityFramework.Migrations", "6.2.0-61023")]
-    public sealed partial class createtablesapplicationsapikeys : IMigrationMetadata
+    public sealed partial class updatetablespasswords : IMigrationMetadata
     {
-        private readonly ResourceManager Resources = new ResourceManager(typeof(createtablesapplicationsapikeys));
+        private readonly ResourceManager Resources = new ResourceManager(typeof(updatetablespasswords));
         
         string IMigrationMetadata.Id
         {
-            get { return "201903070039162_create-tables-applications-apikeys"; }
+            get { return "201903130042345_update-tables-passwords"; }
         }
         
         string IMigrationMetadata.Source

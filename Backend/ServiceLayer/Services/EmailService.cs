@@ -18,13 +18,12 @@ namespace ServiceLayer.Services
         private int SmtpPort = Int32.Parse(Environment.GetEnvironmentVariable("smtpPort"));
         private string SmtpUsername = Environment.GetEnvironmentVariable("smtpUsername");
         private string SmtpPassword = Environment.GetEnvironmentVariable("smtpPassword");
-
-
+        
         //Function to send an email without formatting
         public MimeMessage createEmailPlainBody(string receiverName, string receiverEmail, string emailSubject, string emailBody)
         {
             var message = new MimeMessage();
-            message.From.Add(new MailboxAddress("Support", "support@kfcsso.com"));
+            message.From.Add(new MailboxAddress("Support", "support@greetngroup.com"));
             message.To.Add(new MailboxAddress(receiverName, receiverEmail));
             message.Subject = emailSubject;
             message.Body = new TextPart("plain")

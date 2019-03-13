@@ -90,21 +90,22 @@ namespace UnitTesting
                 return session;
             }
         }
-        
-        public PasswordReset CreatePasswordResetInDB()
+
+        public PasswordReset CreatePasswordResetObject(User user)
         {
             PasswordReset pr = new PasswordReset
             {
-                PasswordResetID = new Guid(),
-                ResetToken = "",
-                UserID = new Guid(),
+                Id = Guid.NewGuid(),
+                ResetToken = Guid.NewGuid().ToString(),
+                UserID = user.Id,
+                User = user,
                 ExpirationTime = DateTime.Now.AddMinutes(5),
                 ResetCount = 0,
                 Disabled = false
             };
-            return CreatePasswordResetInDB(pr);
-        }
 
+            return pr;
+        }
         public PasswordReset CreatePasswordResetInDB(PasswordReset resetToken)
         {
             using (var _db = new DatabaseContext())
@@ -119,7 +120,7 @@ namespace UnitTesting
         {
             PasswordReset pr = new PasswordReset
             {
-                PasswordResetID = new Guid(),
+                Id = new Guid(),
                 ResetToken = "",
                 UserID = new Guid(),
                 ExpirationTime = DateTime.Now.AddMinutes(5),
@@ -128,7 +129,6 @@ namespace UnitTesting
             };
             return pr;
         }
-
         public Application CreateApplicationInDb()
         {
 
@@ -209,6 +209,7 @@ namespace UnitTesting
             };
             return apiKey;
         }
+
 
         public DatabaseContext CreateDataBaseContext()
         {

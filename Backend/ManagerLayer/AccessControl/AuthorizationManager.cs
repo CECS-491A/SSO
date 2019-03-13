@@ -49,7 +49,7 @@ namespace ManagerLayer.AccessControl
                     _db.SaveChanges();
                     return response.Token;
                 }
-                catch (DbEntityValidationException)
+                catch (DbEntityValidationException ex)
                 {
                     //catch error
                     // detach session attempted to be created from the db context - rollback
@@ -79,7 +79,7 @@ namespace ManagerLayer.AccessControl
                     _db.SaveChanges();
                     return response.Token;
                 }
-                catch (DbEntityValidationException)
+                catch (DbEntityValidationException ex)
                 {
                     //catch error
                     // detach session attempted to be created from the db context - rollback
