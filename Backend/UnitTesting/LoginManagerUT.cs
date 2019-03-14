@@ -20,11 +20,11 @@ namespace UnitTesting
         {
             lm = new LoginManager();
             um = new UserManagementManager();
-            user = um.GetUser("new@csulb.edu");
+            user = um.GetUser("cf2080@gmail.com");
             //CreateUser("new@csulb.edu", "passwordtest54321", new DateTime(1996, 12, 15));
             request = new LoginRequest();
-            request.email = "new@csulb.edu";
-            request.password = "passwordtest54321";
+            request.email = "cf2080@gmail.com";
+            request.password = "qwertyuiop";
         }
 
         //LoginCheckUserExists()
@@ -126,20 +126,7 @@ namespace UnitTesting
             bool result = lm.LoginCheckPassword(request);
             Assert.AreNotEqual(false, result);
         }
-        [TestMethod]
-        public void test()
-        {
-            Console.WriteLine(user.IncorrectPasswordCount);
-            request.password = "pass";
-            lm.LoginCheckPassword(request);
-            Console.WriteLine(user.IncorrectPasswordCount);
-            Assert.AreNotEqual(0, user.IncorrectPasswordCount);
-
-            request.password = "passwordtest54321";
-            bool r = lm.LoginCheckPassword(request);
-            Assert.AreEqual(true, r);
-        }
-
+     
         // LoginAuthorized()
 
         [TestMethod]

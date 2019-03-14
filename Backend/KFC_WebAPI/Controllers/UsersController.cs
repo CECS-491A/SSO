@@ -130,7 +130,7 @@ namespace KFC_WebAPI.Controllers
                 {
                     if (loginM.LoginCheckPassword(request))
                     {
-                        return Ok(loginM.LoginAuthorized());
+                        return Ok(loginM.LoginAuthorized(request));
                     }
                     else
                     {
