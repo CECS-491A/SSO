@@ -122,7 +122,6 @@ import { signLaunch, submitLaunch } from "@/services/request";
 import { apiURL } from "@/const.js";
 import axios from "axios";
 import ReadMore from "vue-read-more";
-import { store } from '@/services/request';
 
 Vue.use(ReadMore);
 
