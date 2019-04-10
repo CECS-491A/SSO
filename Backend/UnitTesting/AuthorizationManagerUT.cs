@@ -58,7 +58,8 @@ namespace UnitTesting
             using (var _db = new DatabaseContext())
             {
                 Session validatedSession = _am.ValidateAndUpdateSession(_db, "invalidToken");
-                
+
+                // Assert
                 Assert.IsNull(validatedSession);
             }
         }
@@ -76,14 +77,14 @@ namespace UnitTesting
                 Session deletedSession = _am.DeleteSession(_db, session.Token);
 
                 _db.SaveChanges();
-
+                
                 Session validatedSession = _am.ValidateAndUpdateSession(_db, session.Token);
-
+              
                 // Assert 
                 Assert.IsNotNull(deletedSession);
                 Assert.AreEqual(session.Token, deletedSession.Token);
                 Assert.AreEqual(session.Id, deletedSession.Id);
-                Assert.IsNull(validatedSession);
+                
             }
         }
     }

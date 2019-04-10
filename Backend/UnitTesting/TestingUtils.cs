@@ -1,9 +1,9 @@
+using System;
 using DataAccessLayer.Database;
 using DataAccessLayer.Models;
-using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using ServiceLayer.Services;
-
+using System.Data.Entity;
 using System.Security.Cryptography;
 
 namespace UnitTesting
@@ -46,7 +46,7 @@ namespace UnitTesting
 
         public User CreateUserInDb(User user)
         {
-            using (var _db = new DatabaseContext())
+            using ( var _db = new DatabaseContext() )
             {
                 _db.Entry(user).State = System.Data.Entity.EntityState.Added;
                 _db.SaveChanges();
@@ -92,9 +92,10 @@ namespace UnitTesting
             return session;
         }
 
+
         public Session CreateSessionInDb(Session session)
         {
-            using (var _db = new DatabaseContext())
+            using(var _db = new DatabaseContext())
             {
                 _db.Sessions.Add(session);
                 _db.SaveChanges();
@@ -117,8 +118,22 @@ namespace UnitTesting
 
             return CreateSessionInDb(session);
         }
-        
-        public PasswordReset CreatePasswordResetInDB()
+		public Session CreateExpiredSessionInDb(User user)
+		{
+			Session session = new Session
+			{
+				Id = Guid.NewGuid(),
+				UserId = user.Id,
+				CreatedAt = DateTime.UtcNow.AddHours(-2),
+				UpdatedAt = DateTime.UtcNow.AddHours(-2),
+				ExpiresAt = DateTime.UtcNow.AddHours(-1.5),
+			Token = (Guid.NewGuid()).ToString()
+			};
+
+			return CreateSessionInDb(session);
+		}
+
+		public PasswordReset CreatePasswordResetInDB()
         {
             PasswordReset pr = new PasswordReset
             {
