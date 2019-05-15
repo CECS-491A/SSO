@@ -1,6 +1,7 @@
 ﻿using DataAccessLayer.Database;
 using DataAccessLayer.Models;
 using ManagerLayer.Login;
+using ManagerLayer.Logout;
 using System;
 using System.Data.Entity.Validation;
 using System.Net;
@@ -294,20 +295,32 @@ namespace KFC_WebAPI.Controllers
             {
                 SessionService serv = new SessionService(_db);
                 IAuthorizationManager authorizationManager = new AuthorizationManager(_db);
+                LogoutManager logoutManager = new LogoutManager(_db);
+                Session session = authorizationManager.ValidateAndUpdateSession(request.token);
+                if (session == null)
+                {
+                    return Content(HttpStatusCode.Unauthorized, "Session not valid!");
+                }
+                logoutManager.SendLogoutRequest(request.token);
+
                 try
                 {
                     var response = authorizationManager.DeleteSession(request.token);
                     _db.SaveChanges();
-                    return Ok("User has logged out");
+
+                    if (response != null)
+                    {
+
+                        return Ok("User has logged out");
+                    }
+
                 }
                 catch (DbUpdateException)
                 {
                     return Content(HttpStatusCode.InternalServerError, "There was an error on the server and the request could not be completed");
                 }
-                catch (Exception)
-                {
-                    return Content(HttpStatusCode.ExpectationFailed, "Session has not been found.");
-                }
+                return Content(HttpStatusCode.ExpectationFailed, "Session has not been found.");
+
             }
 
         }

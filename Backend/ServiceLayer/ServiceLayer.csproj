@@ -79,6 +79,7 @@
     <Compile Include="Services\ISessionService.cs" />
     <Compile Include="Services\ITokenService.cs" />
     <Compile Include="Services\IUserService.cs" />
+    <Compile Include="Services\LogoutService.cs" />
     <Compile Include="Services\PasswordService.cs" />
     <Compile Include="Services\ResetService.cs" />
     <Compile Include="Services\SessionService.cs" />
