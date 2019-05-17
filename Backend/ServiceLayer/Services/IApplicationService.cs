@@ -15,10 +15,7 @@ namespace ServiceLayer.Services
         Application GetApplication(Guid id);
         Application GetApplication(string title, string email);
         List<Application> GetAllApplicationsList();
-        IEnumerable GetAllApplications();
-        IEnumerable SortAllApplicationsAlphaAscending();
-        IEnumerable SortAllApplicationsNumOfClicks();
-        IEnumerable SortAllApplicationsAlphaDescending();
+        IEnumerable GetPaginatedApplications(int currentPage, int pageSize, string sortOrder, out int totalPages);
         Application UpdateApplication(Application app);
         Task<HttpResponseMessage> GetApplicationHealth(string healthCheckUrl);
     }

@@ -1,76 +1,119 @@
 <template>
   <div>
-    <v-card lg12>
+    <v-card xs12>
       <v-layout row wrap>
+
+        <!-- Title of the page -->
         <v-flex lg9>
-          <h1 id="appPortal">Application Portal</h1>
+          <h1 id="appPortal">{{ pageTitle }}</h1>
         </v-flex>
-        <v-flex lg3 id="appFilters">
-          <v-select @change="filterApps" :items="sortBy" label="Sort By"></v-select>
+        <!-- Sorts the applications -->
+        <v-flex lg3 id="sortApps">
+          <v-select @change="getApplications()" v-model="pagination.sortOrder" :items="text.sortByItems" :label="text.sortByLabel"></v-select>
         </v-flex>
       </v-layout>
 
       <v-container fluid grid-list-md>
         <v-layout row wrap>
-          <v-flex xs12 md6 lg6 v-for="(app, index) in applications" :key="index">
-            <!-- The card that shows up if the app is under maintenance -->
-            <v-card v-if="app.UnderMaintenance || healthCheck.HealthStatuses[app.Id]" class="transparent">
-              <v-card-title primary-title>
-                <!-- If there is no logo, then a default image will be shown -->
-                <img v-if="app.LogoUrl === null" src="@/assets/no-image-icon.png">
-                <img v-else :src="app.LogoUrl">
+          <v-flex xs12 md6 lg6 v-for="app in applications" :key="app.Id">
 
-                <div class="content">
-                  <!-- Launching to an app can be done by clicking the app title -->
-                  <h3 class="headline mb-0">
-                    <strong class="truncate">{{ app.Title | truncate(maxTitleLength, textTail)}}</strong>
-                  </h3>
+            <!-- Loading the apps gives time to perform initial health check -->
+            <div class="text-xs-center" v-if="appLoading">
+              <v-progress-circular :size="100" color="primary" indeterminate></v-progress-circular>
+            </div>
+            <!-- After health check, show apps -->
+            <div v-else>
+              <!-- The card that shows up if the app IS under maintenance -->
+              <v-card v-if="(app.UnderMaintenance || healthCheck.HealthStatuses[app.Id])" class="transparent">
+                <v-card-title primary-title>
+                  <!-- If there is no logo, then a default image will be shown -->
+                  <img v-if="app.LogoUrl === null" src="@/assets/no-image-icon.png">
+                  <img v-else :src="app.LogoUrl">
+
+                  <div class="content">
+                    <!-- Launching to an app can be done by clicking the app title -->
+                    <h3 class="headline mb-0">
+                      <strong class="truncate">{{ app.Title | truncate(maxTitleLength, text.textTail)}}</strong>
+                    </h3>
+                  </div>
+                </v-card-title>
+
+                <div class="appDesc">
+                  <!-- Shows button that displays app description -->
+                  <AppDetails v-if="app.Description != ''" :title="app.Title" :description="app.Description" />
+                  <AppDetails v-else :title="app.Title" :description="defaultDescription" />
+
+                  <!-- Shows button that displays popularity of app -->
+                  <v-chip color="indigo" text-color="white">Popularity: {{ app.ClickCount | truncate(text.maxPopularityLength, text.textTail)}}</v-chip>
+
+                  <!-- Shows button that displays that an app is under maintenance -->
+                  <v-chip color="orange" text-color="white">
+                    Under Maintenance
+                    <v-icon right large>build</v-icon>
+                  </v-chip>
                 </div>
-              </v-card-title>
-              <div class="appInfo">
-                <AppDetails v-if="app.Description != ''" :title="app.Title" :description="app.Description" />
-                <AppDetails v-else :title="app.Title" :description="defaultDescription" />
+              </v-card>
 
-                <v-chip color="indigo" text-color="white">Popularity: {{ app.ClickCount | truncate(maxPopularityLength, textTail)}}</v-chip>
+              <!-- The card that shows up if the app IS NOT under maintenance -->
+              <v-card v-else hover>
+                <v-card-title primary-title>
+                  <!-- If there is no logo, then a default image will be shown -->
+                  <img v-if="app.LogoUrl === null" src="@/assets/no-image-icon.png" @click="launch(app.Id, app)">
+                  <img v-else :src="app.LogoUrl" @click="launch(app.Id, app)">
 
-                <v-chip color="orange" text-color="white">
-                  Under Maintenance
-                  <v-icon right large>build</v-icon>
-                </v-chip>
-              </div>
-            </v-card>
+                  <div id="content" v-if="app.UnderMaintenance || healthCheck.HealthStatuses[app.Id]">
+                    <!-- Launching to an app can be done by clicking the app title -->
+                    <h3 class="headline mb-0" row wrap>
+                      <strong>{{ app.Title | truncate(maxTitleLength, textTail)}}</strong>
+                    </h3>
+                  </div>
 
-            <!-- The card that shows up if the app is not under maintenance -->
-            <v-card v-else hover>
-              <v-card-title primary-title>
-                <!-- If there is no logo, then a default image will be shown -->
-                <img v-if="app.LogoUrl === null" src="@/assets/no-image-icon.png" @click="launch(app.Id, app)">
-                <img v-else :src="app.LogoUrl" @click="launch(app.Id, app)">
-                <div id="content" v-if="app.UnderMaintenance || healthCheck.HealthStatuses[app.Id]">
-                  <!-- Launching to an app can be done by clicking the app title -->
-                  <h3 class="headline mb-0" row wrap>
-                    <strong>{{ app.Title | truncate(maxTitleLength, textTail)}}</strong>
-                  </h3>
+                  <div class="content" v-else>
+                    <!-- Launching to an app can be done by clicking the app title -->
+                    <h3 id="launchable" class="headline mb-0" @click="launch(app.Id, app)">
+                      <strong>{{ app.Title | truncate(maxTitleLength, text.textTail)}}</strong>
+                    </h3>
+                  </div>
+                </v-card-title>
+
+                <div class="appDesc">
+                  <!-- Shows button to view description of application -->
+                  <AppDetails :title="app.Title" :description="app.Description" />
+                  <!-- Shows button to view popularity of application -->
+                  <v-chip color="indigo" text-color="white">Popularity: {{ app.ClickCount | truncate(text.maxPopularityLength, text.textTail) }}</v-chip>
                 </div>
-                <div class="content" v-else>
-                  <!-- Launching to an app can be done by clicking the app title -->
-                  <h3 id="launchable" class="headline mb-0" @click="launch(app.Id, app)">
-                    <strong>{{ app.Title | truncate(maxTitleLength, textTail)}}</strong>
-                  </h3>
-                </div>
-              </v-card-title>
-              <div class="appInfo">
-                <AppDetails :title="app.Title" :description="app.Description" />
-                <v-chip color="indigo" text-color="white">Popularity: {{ app.ClickCount | truncate(maxPopularityLength, textTail)}}</v-chip>
-              </div>
-            </v-card>
-            <!-- Loads only if app is in progress of launching -->
+              </v-card>
+            </div>
           </v-flex>
         </v-layout>
-        <Loading :dialog="launchLoading" :text="loadingText" />
+      </v-container>
+      <!-- shows loading screen only if app is in progress of launching -->
+      <div v-if="launchLoading">
+        <Loading :dialog="launchLoading" />
+      </div>
+
+      <!-- Shows additional functionality for the user -->
+      <v-container grid-list-sm text-xs-center>
+        <v-layout row wrap>
+          <v-flex xs12 lg4>
+          </v-flex>
+          <v-flex xs12 sm6 md6 lg4>
+            <div class="text-xs-center">
+              <!-- Application pagination -->
+              <v-pagination v-model="pagination.currentPage" :length="pagination.totalPages" :total-visible="pagination.totalVisible" @input="getApplications()"></v-pagination>
+            </div>
+          </v-flex>
+
+          <v-flex xs12 sm6 md6 lg4>
+            <!-- Changes the number of items to display on the page -->
+            <v-select v-model="pagination.pageSize" @change="getApplications()" :items="text.displayItems" :label="text.displayLabel"></v-select>
+          </v-flex>
+        </v-layout>
       </v-container>
     </v-card>
       
+    <!-- Loads only if app is in progress of launching -->
+    <Loading :dialog="launchLoading" :text="loadingText" />
     <div v-if="popupshow">
       <PopupDialog :dialog="popupshow" :text="popuptext" :redirect="false" :route="true" :routeTo="popuprouteTo" />
     </div>
@@ -80,13 +123,13 @@
 
 <script>
 import Vue from "vue";
+import axios from "axios";
 import Loading from "@/components/Dialogs/Loading.vue";
-import { signAndLaunch } from "@/services/oauth";
 import AppDetails from "@/components/Dialogs/AppDetails.vue";
+import PopupDialog from '@/components/Dialogs/PopupDialog.vue';
+import { signAndLaunch } from "@/services/oauth";
 import { filter } from "@/services/TextFormat";
 import { apiURL } from "@/const.js";
-import axios from "axios";
-import PopupDialog from '@/components/Dialogs/PopupDialog.vue';
 import { store } from '@/services/request';
 
 Vue.filter("truncate", filter);
@@ -96,50 +139,78 @@ export default {
   components: { Loading, AppDetails, PopupDialog },
   data() {
     return {
-      text: "This Is An Extremely Long Application Title",
-      textTail: "...",
-      maxPopularityLength: 5,
+      // Main attributes of the page
+      pageTitle: "Application Portal",
       applications: [],
-      sortBy: [
-        "Alphabetical (Ascending)",
-        "Alphabetical (Descending)",
-        "Popularity",
-        "Number of logins"
-      ],
-      defaultDescription:
-        "No Description. Sirloin short loin tenderloin tri-tip jowl chicken shank ribeye landjaeger, pancetta pork chop. Cupim filet mignon tail porchetta, biltong leberkas turkey flank pork chop frankfurter kevin short loin tenderloin tri-tip shankle. Porchetta boudin shoulder sausage, beef ribs pancetta burgdoggen prosciutto tongue. Sausage kevin strip steak, pork belly pig filet mignon chuck shankle andouille tri-tip ham cow. Pork loin t-bone doner, kevin jowl cupim sausage meatloaf.",
+      appLoading: true,
       launchLoading: false,
       loadingText: "",
       maintenance: false,
-      currentPage: 1,
-      pageSize: 20,
-      healthCheck: {
-        LastHealthCheck: new Date(),
-        HealthStatuses: {}
-      },
       error: "",
       popupshow: false,
       popuptext: "",
       popuprouteTo: "/login",
+
+      // Everything involving text goes here
+      text: {
+        defaultText: "Default Text",
+        textTail: "...",
+        maxPopularityLength: 5,
+        sortByLabel: "Sort by",
+        sortByItems: ["Ascending", "Descending", "Popularity", "Default"],
+        displayLabel: "Items per page",
+        displayItems: [2, 4, 6, 8, 100]
+      },
+
+      // Everything involving pagination goes here
+      pagination: {
+        currentPage: 1,
+        pageSize: 8,
+        sortOrder: "",
+        startingIndex: 1,
+        totalPages: 1,
+        totalVisible: 7
+      },
+
+      // Everything involving health check goes here
+      healthCheck: {
+        LastHealthCheck: new Date(),
+        HealthStatuses: {},
+        interval: 11
+      },
+
     }
   },
   computed: {
     maxTitleLength: function() {
       var maxTitleLength = 0;
+
+      // If window size is greated than average mobile device,
+      // set max length of app title to 25 chars. Otherwise,
+      // set it to 16 chars
       if (window.innerWidth > 414) maxTitleLength = 25;
       else maxTitleLength = 16;
       return maxTitleLength;
     }
   },
   methods: {
+    /**
+     * This method uses the SSO API to launch the application
+     * in a new tab
+     *
+     * @param {String} appId
+     *  The id of the application originally a guid, parsed into a string
+     * @param {Object} app
+     *  An individual application from the list of available applications
+     */
     launch(appId, app) {
       this.error = "";
-
+      // Updates click count when launching app
       this.updateClickCount(app);
-
       this.launchLoading = true;
       this.loadingText= "Launching Application...";
 
+      // Using the appId, launches the app when click
       signAndLaunch(appId)
         .catch(e=> {
           this.popuprouteTo = "/login";
@@ -149,78 +220,104 @@ export default {
           store.state.isLogin = false;
           this.error = e.message;
         })
+        // Regardless of passing or failing, cancel launch loading animation
         .finally(() => {
           this.launchLoading = false;
         });
     },
-    filterApps: function(value) {
-      if (value === this.sortBy[0]) this.sortByAscending();
-      else if (value === this.sortBy[1]) this.sortByDescending();
-      else if (value === this.sortBy[2]) this.sortByNumberOfClicks();
-      else alert("Coming Soon!");
-    },
-    async sortByAscending() {
+
+    /**
+     * This method gets applications using the SSO API.
+     * It is paginated to increase performance.
+     */
+    async getApplications() {
       await axios
-        .get(`${apiURL}/applications/ascending`)
-        .then(response => (this.applications = response.data));
+        .get(`${apiURL}/applications`, {
+          params: {
+            // Current page the user is viewing
+            currentPage: this.pagination.currentPage,
+            // Amount of items to display on the page
+            pageSize: this.pagination.pageSize,
+            // Order in which the apps are sorted
+            sortOrder: this.pagination.sortOrder
+          }
+        })
+        .then(response => {
+          // Sets the apps to display
+          this.applications = response.data.PaginatedApplications;
+          // Sets total number of pages for pagination
+          this.pagination.totalPages = response.data.TotalPages;
+        })
+        .catch(error => {
+          this.error = error.message;
+        });
     },
-    async sortByDescending() {
+
+    /**
+     * This method checks the health of each app so that if an app
+     * is down then it is put in maintenance mode, making it unclickable.
+     * The health check is performed after timing out for a few seconds.
+     */
+    async getApplicationHealth() {
       await axios
-        .get(`${apiURL}/applications/descending`)
-        .then(response => (this.applications = response.data));
+        .get(`${apiURL}/applications/healthcheck`)
+        .then(response => {
+          // Date and time of last health check in UTC
+          this.healthCheck.LastHealthCheck = response.data.LastHealthCheck;
+          // The health statuses of each app
+          this.healthCheck.HealthStatuses = response.data.HealthStatuses;
+        })
+        .catch(error => {
+          this.error = error.message;
+        });
+
+      // After timing out for the specified interval, perform another health check
+      setTimeout(() => {
+        this.getApplicationHealth();
+      }, this.healthCheck.interval * 1000);
     },
-    async sortByNumberOfClicks() {
-      await axios
-        .get(`${apiURL}/applications/clicks`)
-        .then(response => (this.applications = response.data));
-    },
+
+    /**
+     * This method updates the click count of an app, thus,
+     * increasing its "popularity"
+     *
+     * @param {Object} app
+     *  The specific app whose click count will be updated
+     */
     async updateClickCount(app) {
-      app.ClickCount += 1;
-      await axios.post(`${apiURL}/applications/update`, {
-        Title: app.Title,
-        Email: app.Email,
-        Description: app.Description,
-        LogoUrl: app.LogoUrl,
-        UnderMaintenance: app.UnderMaintenance,
-        ClickCount: app.ClickCount,
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json"
-        }
-      });
+      app.ClickCount += 1; // Increase click coutn by 1 each time
+      await axios
+        .post(`${apiURL}/applications/update`, {
+          Title: app.Title,
+          Email: app.Email,
+          Description: app.Description,
+          LogoUrl: app.LogoUrl,
+          UnderMaintenance: app.UnderMaintenance,
+          ClickCount: app.ClickCount
+        })
+        .then(this.getApplications())
+        .catch(error => {
+          this.error = error.message;
+        });
     }
   },
-  async created() {
-    await axios
-      .get(`${apiURL}/applications`, {
-        params: {
-          currentPage: this.currentPage,
-          pageSize: this.pageSize
-        }
-      })
-      .then(response => {
-        this.applications = response.data;
-        this.applications.forEach(app => {
-          this.healthCheck.HealthStatuses[app.Id] = false;
-        });
-      });
+
+  // Initialize reactive data properties.
+  // DOM not mounted yet
+  created() {
+    this.getApplications();
   },
-  mounted() {
-    setInterval(() => {
-      axios
-        .get(`${apiURL}/applications/healthcheck`)
-        .then(response => (this.healthCheck = response.data))
-        .catch("Unexpected error occured in the server.");
-    }, 10000);
+  // Perform DOM manipulation since its mounted
+  async mounted() {
+    await this.getApplicationHealth();
+
+    // Set app loading to false after health check
+    this.appLoading = false;
   }
 };
 </script>
 
-<style scoped>
-.v-card {
-  margin: 1em;
-}
-
+<style lang="css" scoped>
 #appPortal {
   padding: 1em 1em 0 1em;
   font-size: 38px;
@@ -232,11 +329,11 @@ export default {
   margin-right: 1em;
 }
 
-#appFilters {
+#sortApps {
   padding: 2em 3em 0 2em;
 }
 
-.appInfo {
+.appDesc {
   padding-bottom: 1em;
   margin: 0 1em;
 }

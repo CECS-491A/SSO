@@ -107,6 +107,7 @@
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="Models\ApplicationHealthCheck.cs" />
+    <Compile Include="Models\ApplicationResponse.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RequestModels\ExternalUserDeleteRequestModel.cs" />
     <Compile Include="RequestModels\LaunchRequestModel.cs" />

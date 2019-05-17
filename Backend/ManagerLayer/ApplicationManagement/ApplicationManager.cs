@@ -402,6 +402,15 @@ namespace ManagerLayer.ApplicationManagement
         }
 
         #region InputValidation
+        public bool IsValidPaginationParameters(int currentPage, int pageSize)
+        {
+            if (currentPage <= 0 || pageSize <=0)
+            {
+                return false;
+            }
+            return true;
+        }
+
         /// <summary>
         /// Validates a string length
         /// </summary>

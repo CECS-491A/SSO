@@ -12,10 +12,7 @@ namespace DataAccessLayer.Repositories
         Application DeleteApplication(Guid id);
         Application GetApplication(Guid id);
         Application GetApplication(string title, string email);
-        IEnumerable GetAllApplications();
-        IEnumerable SortAllApplicationsAlphaAscending();
-        IEnumerable SortAllApplicationsAlphaDescending();
-        IEnumerable SortAllApplicationsNumOfClicks();
+        IEnumerable GetPaginatedApplications(int currentPage, int pageSize, string sortOrder, out int totalPages);
         List<Application> GetAllApplicationsList();
         Application UpdateApplication(Application app);
     }

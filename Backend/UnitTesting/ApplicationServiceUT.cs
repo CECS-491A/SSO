@@ -412,10 +412,103 @@ namespace UnitTesting
                 // Arrange
                 var expected = true;
                 var actual = false;
-                var applications = _applicationService.GetAllApplications();
+                var applications = _applicationService.GetAllApplicationsList();
 
                 // Act
                 if (applications != null)
+                {
+                    actual = true;
+                }
+
+                // Assert
+                Assert.AreEqual(expected, actual);
+            }
+        }
+        
+        [TestMethod]
+        public void GetPaginatedApplications_Should_NotHaveNullElementsAndCorrectCount()
+        {
+            using (var _db = tu.CreateDataBaseContext())
+            {
+                // Arrange
+                IApplicationService applicationService = new ApplicationService(_db);
+                var sortOrder = "";
+                var currentPage = 1;
+                var pageSize = 3;
+                var expectedTotal = 3;
+                var actualTotal = 0;
+                var expectedValues = true;
+                var actualValues = false;
+
+                // Act
+                var applications = applicationService.GetPaginatedApplications(currentPage, pageSize, sortOrder, out int totalPages);
+
+                foreach (var app in applications)
+                {
+                    // Check if an individual app is not null meaning a valid object was found
+                    if (app != null)
+                    {
+                        actualValues = true;
+                    }
+                    else
+                    {
+                        // If the individual app is null
+                        actualValues = false;
+                        break;
+                    }
+                    // Increment amount of paginated apps
+                    actualTotal++;
+                }
+
+                // Assert
+                Assert.AreEqual(expectedTotal, actualTotal);
+                Assert.AreEqual(expectedValues, actualValues);
+            }
+        }
+
+        [TestMethod]
+        public void GetPaginatedApplications_Should_ReturnAllAppsIfPageSizeExceedsTotalCount()
+        {
+            using (var _db = tu.CreateDataBaseContext())
+            {
+                // Arrange
+                IApplicationService applicationService = new ApplicationService(_db);
+                var sortOrder = "";
+                var currentPage = 1;
+                var pageSize = 100;
+                var expectedTotal = 7; // Assuming total applications is 7
+                var actualTotal = 0;
+
+                // Act
+                var applications = applicationService.GetPaginatedApplications(currentPage, pageSize, sortOrder, out int totalPages);
+
+                foreach (var app in applications)
+                {
+                    actualTotal++;
+                }
+
+                // Assert
+                Assert.AreEqual(expectedTotal, actualTotal);
+            }
+        }
+
+        [TestMethod]
+        public void GetPaginatedApplications_Should_ReturnZeroPagesWhenNegativePageOrPageSize()
+        {
+            using (var _db = tu.CreateDataBaseContext())
+            {
+                // Arrange
+                IApplicationService applicationService = new ApplicationService(_db);
+                var sortOrder = "";
+                var currentPage = -1;
+                var pageSize = -1;
+                var expected = true;
+                var actual = false;
+
+                // Act
+                // Total pages should be zero since there is no such thing as a negative page number or negative page size
+                var applications = applicationService.GetPaginatedApplications(currentPage, pageSize, sortOrder, out int totalPages);
+                if (totalPages == 0)
                 {
                     actual = true;
                 }
@@ -432,14 +525,14 @@ namespace UnitTesting
             {
                 // Arrange
                 IApplicationService _applicationService = new ApplicationService(_db);
-                var healthCheckUrl = "https://www.google.com/";
-                var expected = 200;
+                var workingUrl = "https://www.google.com/";
+                var expected = true;
 
                 // Act
-                var actual = await _applicationService.GetApplicationHealth(healthCheckUrl);
+                var actual = await _applicationService.GetApplicationHealth(workingUrl);
    
                 // Assert
-                Assert.AreEqual(expected, (int) actual.StatusCode);
+                Assert.AreEqual(expected, actual.IsSuccessStatusCode);
             }
         }
 

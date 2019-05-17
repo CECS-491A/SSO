@@ -18,7 +18,7 @@ namespace KFC_WebAPI.Models
         public ApplicationHealthCheck()
         {
             HealthStatuses = new Dictionary<Guid, bool>();
-            LastHealthCheck = DateTime.Now;
+            LastHealthCheck = DateTime.UtcNow;
         }
     }
 }

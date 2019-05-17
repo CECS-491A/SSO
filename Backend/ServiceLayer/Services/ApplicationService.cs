@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using DataAccessLayer.Database;
 using DataAccessLayer.Models;
@@ -12,10 +14,9 @@ namespace ServiceLayer.Services
 {
     public class ApplicationService: IApplicationService
     {
-        IApplicationRepository _applicationRepository;
-        IApiKeyRepository _apiKeyRepository;
-        HttpClient client = new HttpClient();
-        DatabaseContext _db;
+        private IApplicationRepository _applicationRepository;
+        private IApiKeyRepository _apiKeyRepository;
+        private readonly DatabaseContext _db;
 
         public ApplicationService(DatabaseContext _db)
         {
@@ -56,35 +57,49 @@ namespace ServiceLayer.Services
             return _applicationRepository.GetAllApplicationsList();
         }
        
-        public IEnumerable GetAllApplications()
+        /// <summary>
+        /// Uses the application repository to get paginated applications
+        /// along with the total number of pages to display
+        /// </summary>
+        /// <param name="currentPage">The current page the user is on</param>
+        /// <param name="pageSize">The number of applications to display</param>
+        /// <param name="totalPages">The total number of pages to display</param>
+        /// <returns>A collection of paginated applications and the total pages</returns>
+        public IEnumerable GetPaginatedApplications(int currentPage, int pageSize, string sortOrder, out int totalPages)
         {
-            return _applicationRepository.GetAllApplications();
+            return _applicationRepository.GetPaginatedApplications(currentPage, pageSize, sortOrder, out totalPages);
         }
-        
-        public IEnumerable SortAllApplicationsAlphaAscending()
-        {
-            return _applicationRepository.SortAllApplicationsAlphaAscending();
-        }
-
-        public IEnumerable SortAllApplicationsNumOfClicks()
-        {
-            return _applicationRepository.SortAllApplicationsNumOfClicks();
-        }
-
-        public IEnumerable SortAllApplicationsAlphaDescending()
-        {
-            return _applicationRepository.SortAllApplicationsAlphaDescending();
-        }
+      
 
         public Application UpdateApplication(Application app)
         {
             return _applicationRepository.UpdateApplication(app);
         }
 
+        /// <summary>
+        /// Makes a get request using the health check url to retrieve a response
+        /// </summary>
+        /// <param name="healthCheckUrl">The domain to perform a get request on</param>
+        /// <returns>A response containing anything the url returns but primarily the status code</returns>
         public async Task<HttpResponseMessage> GetApplicationHealth(string healthCheckUrl)
         {
-            return await client.GetAsync(healthCheckUrl);
+            using (var client = new HttpClient()) { 
+                try
+                {
+                    // Makes an asyncronous HTTP GET request to the health check url provided
+                    // Using ConfigureAwait(false) to prevent deadlocks on the calling thread
+                    return await client.GetAsync(healthCheckUrl).ConfigureAwait(false);
+                }
+                catch (Exception e)
+                {
+                    // Sends back a response with the error message
+                    HttpResponseMessage response = new HttpResponseMessage
+                    {
+                        Content = new StringContent(e.InnerException.Message)
+                    };
+                    return response;
+                }
+            }
         }
-
     }
 }
